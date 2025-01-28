@@ -7,7 +7,6 @@ import com.itextpdf.layout.element.Paragraph;
 import jakarta.mail.MessagingException;
 
 import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.util.ByteArrayDataSource;
 import microservice.email.config.RabbitMQConfig;
 import microservice.email.utils.OrderCreatedEvent;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -65,15 +64,14 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            helper.setTo(recipientEmail);
+            //Se configura el destinatario
+            helper.setTo("testeando432@gmail.com");
             helper.setSubject(subject);
             helper.setText(body);
 
-            // Adjuntar el archivo PDF
             File pdfFile = new File(pdfFilePath);
             helper.addAttachment(pdfFile.getName(), pdfFile);
 
-            // Enviar el correo electrónico
             mailSender.send(message);
             System.out.println("Correo enviado exitosamente a " + recipientEmail);
         } catch (MessagingException e) {
