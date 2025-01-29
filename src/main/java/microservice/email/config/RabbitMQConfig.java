@@ -12,10 +12,16 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 public class RabbitMQConfig {
 
     public static final String QUEUE = "order_created_queue";
+    public static final String USER_QUEUE = "user_registered_queue";
 
     @Bean
     public Queue orderCreatedQueue() {
         return new Queue(QUEUE);
+    }
+
+    @Bean
+    public Queue userRegisteredQueue() {
+        return new Queue(USER_QUEUE);
     }
 
     @Bean
@@ -30,4 +36,5 @@ public class RabbitMQConfig {
         factory.setMessageConverter(messageConverter());
         return factory;
     }
+
 }

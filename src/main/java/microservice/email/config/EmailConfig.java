@@ -20,10 +20,10 @@ public class EmailConfig {
 //        mailSender.setPassword("a18ff16637ca7d");
 
         //Se configura el remitente
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
-        mailSender.setUsername("testeoapptesteo@gmail.com");
-        mailSender.setPassword("vmki ruju dhjz febf");
+        mailSender.setHost("sandbox.smtp.mailtrap.io");
+        mailSender.setPort(2525);
+        mailSender.setUsername("d0465e537dbdf9");
+        mailSender.setPassword("a18ff16637ca7d");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");

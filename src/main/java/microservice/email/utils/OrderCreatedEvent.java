@@ -15,11 +15,24 @@ public class OrderCreatedEvent {
     private String email;
     private List<OrderItemDetails> orderItems;
 
+//    @Data
+//    @NoArgsConstructor
+//    @AllArgsConstructor
+//    public static class OrderItemDetails {
+//        private Long productId;
+//        private String productName;
+//        private Integer quantity;
+//    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OrderItemDetails {
         private Long productId;
+        private String name;
+        private String description;
+        private Double price;
+        private Integer stock;
         private Integer quantity;
     }
 
