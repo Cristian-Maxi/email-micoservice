@@ -13,6 +13,7 @@ public class RabbitMQConfig {
 
     public static final String QUEUE = "order_created_queue";
     public static final String USER_QUEUE = "user_registered_queue";
+    public static final String PRODUCT_QUEUE = "product.update.queue";
 
     @Bean
     public Queue orderCreatedQueue() {
@@ -22,6 +23,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue userRegisteredQueue() {
         return new Queue(USER_QUEUE);
+    }
+
+    @Bean
+    public Queue productUpdateQueue() {
+        return new Queue(PRODUCT_QUEUE);
     }
 
     @Bean

@@ -10,6 +10,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import microservice.email.config.RabbitMQConfig;
 import microservice.email.utils.OrderCreatedEvent;
+import microservice.email.utils.ProductUpdatedEvent;
 import microservice.email.utils.UserRegisteredEvent;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,26 +33,6 @@ public class EmailService {
         sendEmailWithPdf(event);
     }
 
-//    private void generateOrderPdf(OrderCreatedEvent event) {
-//        try (PdfWriter writer = new PdfWriter("order_" + event.getOrderId() + ".pdf")) {
-//            PdfDocument pdf = new PdfDocument(writer);
-//            Document document = new Document(pdf);
-//
-//            document.add(new Paragraph("Order Details").setFontSize(20));
-//            document.add(new Paragraph("Order ID: " + event.getOrderId()));
-//            document.add(new Paragraph("User ID: " + event.getUserId()));
-//            document.add(new Paragraph("Items:"));
-//
-//            for (OrderCreatedEvent.OrderItemDetails item : event.getOrderItems()) {
-//                document.add(new Paragraph("- " + item.getProductName() + " (ID: " + item.getProductId() + "), Quantity: " + item.getQuantity()));
-//            }
-//
-//            document.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     private void generateOrderPdf(OrderCreatedEvent event) {
         try (PdfWriter writer = new PdfWriter("order_" + event.getOrderId() + ".pdf")) {
             PdfDocument pdf = new PdfDocument(writer);
@@ -71,9 +52,14 @@ public class EmailService {
             table.addHeaderCell("Stock");
             table.addHeaderCell("Quantity");
 
+            double totalAmount = 0.0;
+
             for (OrderCreatedEvent.OrderItemDetails item : event.getOrderItems()) {
+                double subtotal = item.getPrice() * item.getQuantity();
+                totalAmount += subtotal;
+
                 table.addCell(String.valueOf(item.getProductId()));
-                table.addCell(item.getName()); // Agregando nombre del producto
+                table.addCell(item.getName());
                 table.addCell(item.getDescription());
                 table.addCell("$" + String.format("%.2f", item.getPrice()));
                 table.addCell(String.valueOf(item.getStock()));
@@ -81,6 +67,10 @@ public class EmailService {
             }
 
             document.add(table);
+
+            document.add(new Paragraph("\nTotal Amount: $" + String.format("%,.2f", totalAmount))
+                    .setFontSize(14));
+
             document.close();
 
         } catch (IOException e) {
@@ -137,6 +127,35 @@ public class EmailService {
         } catch (MessagingException e) {
             e.printStackTrace();
             System.err.println("Error sending welcome email: " + e.getMessage());
+        }
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.PRODUCT_QUEUE)
+    public void handleProductUpdatedEvent(ProductUpdatedEvent event) {
+        String subject = "Inventario Actualizado: " + event.getProductName();
+        String message = String.format(
+                "El producto %s (ID: %d) ha cambiado su stock de %d a %d.",
+                event.getProductName(), event.getProductId(), event.getOldStock(), event.getNewStock()
+        );
+
+        sendEmail("admin@empresa.com", subject, message);
+        System.out.println("Notificación enviada al administrador: " + message);
+    }
+
+    public void sendEmail(String to, String subject, String body) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(body);
+
+            mailSender.send(message);
+            System.out.println("Correo enviado a " + to);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            System.err.println("Error al enviar el correo: " + e.getMessage());
         }
     }
 }
